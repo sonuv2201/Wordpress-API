@@ -1,0 +1,100 @@
+<?php
+/**
+* Plugin Name: Custom API
+* Plugin URI: http://you-domain.com
+* Description: Curhing It!
+* Version: 1.0
+* Author: Sonu Verma
+* Author URI: http://you-domain.com 
+*/
+
+/* Plugin name and file name should be same */
+
+/*
+add_filter( 'rest_authentication_errors', 'only_authorised_rest_access');
+
+function only_authorised_rest_access( $result )
+{
+    if( ! is_user_logged_in() ) {
+        return new WP_Error( 'rest_unauthorised', __( 'Only authenticated users can access the REST API.', 'rest_unauthorised' ), array( 'status' => rest_authorization_required_code() ) );
+    }
+
+    return $result;
+}
+*/
+
+add_action('rest_api_init','lab_get_discrict');
+
+function lab_get_discrict(){
+	register_rest_route('map/','discrict',array(
+		'method' => 'GET',
+		'callback' => 'get_discrict_info'
+	));
+}
+
+function get_discrict_info(){  
+	$details = [];
+	
+	$terms = get_terms(array(
+		'texonomy' => 'category',
+		'hide_empty' => false
+	));
+	
+	foreach($terms as $term){
+		$details[] = array(
+			'id' => $term -> term_id,
+			'name' => $term -> name,
+		);
+	}
+	
+	return rest_ensure_response($details);
+}
+
+
+
+
+
+
+add_action('rest_api_init', function () {
+        register_rest_route( 'api/v1', '/cities', array(
+            'methods' => 'POST',
+            'callback' => 'create_city_from_data'
+        ));
+    });
+	
+function create_city_from_data($req) {
+    $response['name'] = $req['name'];
+    $response['population'] = $req['population'];
+	$response['fileu'] = $req['fileu'];
+
+    $res = new WP_REST_Response($response);
+    $res->set_status(200);
+
+    return ['req' => $res];
+}
+
+
+
+
+//Add this to your function.php
+function upload_image( $imageID, $login ) {
+  $request_url = 'https://DOMAINNAME.com/wp-json/wp/v2/media'; //change the domainname
+    $image_file_path = get_attached_file($imageID); //change this to your file meda path if your not throwing media file to other server
+  $image = file_get_contents( $image_file_path );
+    $mime = mime_content_type( $image_file_path );
+
+  $api_media_response = wp_remote_post( $request_url, array(
+        'headers' => array(
+            'Authorization' => 'Basic ' . base64_encode( $login ), //login format USERNAME:PASSWORD
+            'Content-Disposition' => 'attachment; filename='.basename($image_file_path).'',
+            'Content-Type' => $mime
+        ),
+        'body' => $image
+    ) );
+
+  //this function return wp_remote_post
+  // more info => https://developer.wordpress.org/reference/functions/wp_remote_post/
+}
+
+
+//https://michaelsoriano.com/create-a-file-uploader-with-react-and-wordpress-rest-api-media/
