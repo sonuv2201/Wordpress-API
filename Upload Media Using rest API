@@ -1,0 +1,31 @@
+<input type="file" id="fileUpload" />
+
+<script>
+document.querySelector('#fileUpload').addEventListener('change', event => {
+  handleImageUpload(event)
+})
+
+
+const handleImageUpload = event => {
+	const files = event.target.files
+ 
+	const profilePicInput = document.getElementById("fileUpload");
+	const formData = new FormData();
+	formData.append("file", profilePicInput.files[0]);
+
+	formData.append("title", "Hello World!");
+	formData.append("caption", "Have a wonderful day!");
+	
+	fetch('http://localhost/wordpress/wp-json/wp/v2/media', {
+		method: "POST",
+		headers: {
+			Authorization: "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOlwvXC9sb2NhbGhvc3RcL3dvcmRwcmVzcyIsImlhdCI6MTY1MzcxMDc4MywibmJmIjoxNjUzNzEwNzgzLCJleHAiOjE2NTQzMTU1ODMsImRhdGEiOnsidXNlciI6eyJpZCI6IjIifX19.Q3evceUAD3e1yrdr8ylpW1vMFR0fjhwywZfXFm12Pjs"
+		},
+		body: formData
+	}).then(response => response.json()).then(data => {
+		console.log(data)
+	}).catch(error => {
+		console.error(error)
+	});
+}
+</script>
